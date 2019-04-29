@@ -2,23 +2,46 @@ var express = require("express");
 var app = express();
 var port = process.env.PORT || 3000;
 var bodyParser = require("body-parser");
+var mongoose = require("mongoose");
 
+mongoose.connect("mongodb://localhost/yelp_camp", {useNewUrlParser: true});
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
-var campgrounds = [
-    {name: "Salmon Creek", image: "https://images.pexels.com/photos/699558/pexels-photo-699558.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"},
-    {name: "Granite Hill", image: "https://images.pexels.com/photos/1376960/pexels-photo-1376960.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"},
-    {name: "Mountain Goat's Rest", image: "https://images.pexels.com/photos/618848/pexels-photo-618848.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"}
-]
+// Schema setup
+var campgorundSchema = new mongoose.Schema({
+    name: String,
+    image: String
+});
+
+var Campground = mongoose.model("Campground", campgorundSchema);
+
+// Campground.create(
+//     {
+//         name: "Mountain Goat's Rest",
+//         image: "https://images.pexels.com/photos/618848/pexels-photo-618848.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"
+//     }, function(err, campground) {
+//         if(err){
+//             console.log(err);
+//         } else {
+//             console.log("Newly created campground: ");
+//             console.log(campground);
+//         }
+//     });
 
 app.get("/", function(req, res){
     res.render("landing");
 });
 
 app.get("/campgrounds", function(req, res){
-    //shows all campgrounds 
-    res.render("campgrounds",{campgrounds:campgrounds});
+    //Get all campgrounds from DB
+    Campground.find({}, function(err, allCampgrounds){
+        if(err){
+            console.log(err);
+        } else {
+            res.render("campgrounds",{campgrounds:allCampgrounds});
+        }
+    });
 });
 
 app.post("/campgrounds", function(req, res){
@@ -27,10 +50,15 @@ app.post("/campgrounds", function(req, res){
     var image = req.body.image;
     //make new objects
     var newCampground = {name: name, image: image};
-    //push new object 
-    campgrounds.push(newCampground);
-    //redirect back to campgrounds page
-    res.redirect("/campgrounds");
+    //Create a new campground and save to DB
+    Campground.create(newCampground, function(err, newlyCreated) {
+        if(err){
+            console.log(err);
+        } else {
+            //redirect back to campgrounds page
+            res.redirect("/campgrounds");
+        }
+    });
 });
 
 app.get("/campgrounds/new", function(req, res){
