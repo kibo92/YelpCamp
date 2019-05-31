@@ -3,19 +3,13 @@ var app = express();
 var port = process.env.PORT || 3000;
 var bodyParser = require("body-parser");
 var mongoose = require("mongoose");
+// Schema setup
+var Campground = require("./models/campgrounds");
 
 mongoose.connect("mongodb://localhost/yelp_camp", {useNewUrlParser: true});
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
-// Schema setup
-var campgorundSchema = new mongoose.Schema({
-    name: String,
-    image: String,
-    description: String
-});
-
-var Campground = mongoose.model("Campground", campgorundSchema);
 
 // Campground.create(
 //     {
