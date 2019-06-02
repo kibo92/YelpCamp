@@ -5,25 +5,12 @@ var bodyParser = require("body-parser");
 var mongoose = require("mongoose");
 // Schema setup
 var Campground = require("./models/campgrounds");
+var seedDB = require("./seeds");
 
 mongoose.connect("mongodb://localhost/yelp_camp", {useNewUrlParser: true});
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
-
-
-// Campground.create(
-//     {
-//         name: "Mountain Goat's Rest",
-//         image: "https://images.pexels.com/photos/618848/pexels-photo-618848.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-//         description: "This is a huge granite hill, no bathrooms. No water. Beautiful granite!"
-//     }, function(err, campground) {
-//         if(err){
-//             console.log(err);
-//         } else {
-//             console.log("Newly created campground: ");
-//             console.log(campground);
-//         }
-//     });
+seedDB();
 
 app.get("/", function(req, res){
     res.render("landing");
@@ -69,10 +56,11 @@ app.get("/campgrounds/new", function(req, res){
 //SHOW - shows more info about one campground
 app.get("/campgrounds/:id", function(req, res){
     //find the campground with provided ID
-    Campground.findById(req.params.id, function(err, foundCampground){
+    Campground.findById(req.params.id).populate("comments").exec(function(err, foundCampground){
         if(err){
             console.log(err);
         } else {
+            console.log(foundCampground);
             //render show template with that campground
             res.render("show", {campground: foundCampground});
         }
